@@ -1,9 +1,4 @@
 #include <WinAPI.au3>
-#include <Constants.au3>
-#include <MsgBoxConstants.au3>
-#include <WinAPISysWin.au3>
-
-$CurrentlyOver = "No"
 
 While 1
 
@@ -15,37 +10,46 @@ WEnd
 Exit
 
 Func RocketDock()
-	Local $pos = _WinAPI_GetMousePos()
-    Local $hwnd = _WinAPI_WindowFromPoint($pos)
 
-	Local $RocketDock = "0x00010010"
-	local $CurrentMouseOver = ""
+    ; Get the mouse position
+    Local $aPos = MouseGetPos()
+	; List all running windows
+	$list = WinList()
+    ; Get the dimensions of the primary monitor
+	$iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	$iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
 	
-    ; Retrieve the top-level window (remove any parent windows)
-    While _WinAPI_GetParent($hwnd) <> 0
-		$hwnd = _WinAPI_GetParent($hwnd)
-		$CurrentMouseOver = GetClassName($hwnd)
-    WEnd
+;	ConsoleWrite("Desktop " & $iFullDesktopWidth & "x" & $iFullDesktopHeight & @CRLF)
 
-	if $CurrentMouseOver = $RocketDock and $CurrentlyOver = "No" Then
-		$CurentlyOver = "Yes"
-		$list = WinList()
-		If $list[0][0] = 0 Then Exit
+	$omethingIsFullscreen = False
+    ; Loop through the windows
+    For $i = 1 To $list[0][0]
+        ; Get the position and size of the current window
+        Local $aWinPos = WinGetPos($list[$i][1])
 
-		$i = 0
+        ; Check if the window is fullscreen by comparing with the full desktop dimensions
+        If $aWinPos[0] <= 0 And $aWinPos[1] <= 0 And _
+           $aWinPos[1] + $aWinPos[3] >= $iFullDesktopHeight Then
+            if $list[$i][0] <> "Program Manager" then
+				;ConsoleWrite("Window " & $list[$i][0] & " is fullscreen." & @CRLF)
+				$omethingIsFullscreen = True
+			endif
+        EndIf
+    Next
 
-		Local $pos = _WinAPI_GetMousePos() ; Get current mouse position
-		Local $hwnd = _WinAPI_WindowFromPoint($pos) ; Get handle of the window at mouse position
+	if $omethingIsFullscreen = False then
+		; Loop through the windows
+		For $i = 1 To $list[0][0]
+			; Get the position of the current window
+			Local $aWinPos = WinGetPos($list[$i][1])
 
-		For $n = 1 To $list[0][0]
-			$i += 1
-			If $list[$n][0] = "RocketDock" Then
-                WinActivate($list[$n][1])
-            EndIf
+			; Check if the mouse is over the current window
+			If $aPos[0] >= $aWinPos[0] And $aPos[0] <= $aWinPos[0] + $aWinPos[2] And $aPos[1] >= $aWinPos[1] And $aPos[1] <= $aWinPos[1] + $aWinPos[3] Then
+				if $list[$i][0] = "RocketDock" then
+					WinActivate($list[$i][1])
+				endif
+			EndIf
 		Next
-
-	else
-		$CurrentlyOver = "No"
 	endif
 
 EndFunc
@@ -64,16 +68,3 @@ func TaskBar()
 		EndIf
 	EndIf
 endfunc	
-
-Func GetClassName(ByRef $hWnd)
-    Local $ret = DLLCall("user32.dll","int","GetClassName","hwnd",$hWnd,"str","","int",5000)
-    If IsArray($ret) Then
-        Return $ret[1]
-    Else
-        Return ""
-    EndIf
-EndFunc
-
-Func AboutScript()
-    MsgBox($MB_SYSTEMMODAL, "RocketDock to front Taskbar to back", "All this app does, is set the windows taskbar to the back and when mouseover RocketDock, will move it to the front!")
-EndFunc   ;==>AboutScript
