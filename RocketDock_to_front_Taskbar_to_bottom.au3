@@ -1,3 +1,4 @@
+#pragma compile(Icon, dock_icon.ico)
 #include <WinAPI.au3>
 #include <WindowsConstants.au3>
 
