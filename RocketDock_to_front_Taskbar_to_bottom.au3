@@ -11,6 +11,8 @@ Exit
 
 Func RocketDock()
 
+	; If no app are full height and mouse is over the dock, then bring to front
+
     ; Get the mouse position
     Local $aPos = MouseGetPos()
 	; List all running windows
