@@ -3,15 +3,6 @@
 #include <WindowsConstants.au3>
 
 Local $aScreenResolution = _DesktopDimensions()
-
-;MsgBox($MB_SYSTEMMODAL, '', 'Example of _DesktopDimensions:' & @CRLF & _
-;        'Number of monitors = ' & $aScreenResolution[0] & @CRLF & _
-;        'Primary Width = ' & $aScreenResolution[1] & @CRLF & _
-;        'Primary Height = ' & $aScreenResolution[2] & @CRLF & _
-;        'Secondary Width = ' & $aScreenResolution[3] & @CRLF & _
-;        'Secondary Height = ' & $aScreenResolution[4] & @CRLF)
-
-
 ; Get the dimensions of the primary monitor
 $iFullDesktopWidth = $aScreenResolution[1]
 $iFullDesktopHeight = $aScreenResolution[2]
@@ -69,11 +60,21 @@ Func RocketDock()
 		For $i = 1 To $list[0][0]
 			; Get the position of the current window
 			Local $aWinPos = WinGetPos($list[$i][1])
+			If Not IsArray($aWinPos) Then
+				ConsoleWrite("Error: Unable to get window position list. Exiting function." & @CRLF)
+				Return
+			EndIf
 
 			; Check if the mouse is over the current window
-			If $aPos[0] >= $aWinPos[0] And $aPos[0] <= $aWinPos[0] + $aWinPos[2] And $aPos[1] >= $aWinPos[1] And $aPos[1] <= $aWinPos[1] + $aWinPos[3] Then
-				if $list[$i][0] = "RocketDock" then
-					WinActivate($list[$i][1])
+			If $aPos[0] >= $aWinPos[0] then 
+				if $aPos[0] <= $aWinPos[0] + $aWinPos[2] Then
+					if $aPos[1] >= $aWinPos[1] then 
+						if $aPos[1] <= $aWinPos[1] + $aWinPos[3] Then
+							if $list[$i][0] = "RocketDock" then
+								WinActivate($list[$i][1])
+							endif
+						endif
+					endif
 				endif
 			EndIf
 		Next
